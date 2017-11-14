@@ -1,0 +1,16 @@
+[submodule "third_party/chai"]
+	path = third_party/chai
+	url = https://github.com/ChaiScript/ChaiScript.git
+[submodule "third_party/sdl"]
+	path = third_party/sdl
+	url = https://github.com/spurious/SDL-mirror.git
+	branch = release-2.0.6
+[submodule "third_party/json"]
+	path = third_party/json
+	url = https://github.com/nlohmann/json.git
+[submodule "third_party/plog"]
+	path = third_party/plog
+	url = https://github.com/SergiusTheBest/plog.git
+[submodule "third_party/googletest"]
+	path = third_party/googletest
+	url = https://github.com/google/googletest.git

@@ -42,11 +42,18 @@ TestResult.xml
 [Rr]eleasePS/
 dlldata.c
 
+<<<<<<< HEAD
 # .NET Core
 project.lock.json
 project.fragment.lock.json
 artifacts/
 **/Properties/launchSettings.json
+=======
+# DNX
+project.lock.json
+project.fragment.lock.json
+artifacts/
+>>>>>>> Initial commit
 
 *_i.c
 *_p.c
@@ -166,7 +173,11 @@ PublishScripts/
 !**/packages/build/
 # Uncomment if necessary however generally it will be regenerated when needed
 #!**/packages/repositories.config
+<<<<<<< HEAD
 # NuGet v3's project.json files produces more ignorable files
+=======
+# NuGet v3's project.json files produces more ignoreable files
+>>>>>>> Initial commit
 *.nuget.props
 *.nuget.targets
 
@@ -199,6 +210,10 @@ ClientBin/
 *.jfm
 *.pfx
 *.publishsettings
+<<<<<<< HEAD
+=======
+node_modules/
+>>>>>>> Initial commit
 orleans.codegen.cs
 
 # Since there are multiple workflows, uncomment next line to ignore bower_components
@@ -219,7 +234,10 @@ UpgradeLog*.htm
 # SQL Server files
 *.mdf
 *.ldf
+<<<<<<< HEAD
 *.ndf
+=======
+>>>>>>> Initial commit
 
 # Business Intelligence projects
 *.rdl.data
@@ -234,10 +252,13 @@ FakesAssemblies/
 
 # Node.js Tools for Visual Studio
 .ntvs_analysis.dat
+<<<<<<< HEAD
 node_modules/
 
 # Typescript v1 declaration files
 typings/
+=======
+>>>>>>> Initial commit
 
 # Visual Studio 6 build log
 *.plg
@@ -245,9 +266,12 @@ typings/
 # Visual Studio 6 workspace options file
 *.opt
 
+<<<<<<< HEAD
 # Visual Studio 6 auto-generated workspace file (contains which files were open etc.)
 *.vbw
 
+=======
+>>>>>>> Initial commit
 # Visual Studio LightSwitch build output
 **/*.HTMLClient/GeneratedArtifacts
 **/*.DesktopClient/GeneratedArtifacts
@@ -275,6 +299,7 @@ __pycache__/
 *.pyc
 
 # Cake - Uncomment if you are using it
+<<<<<<< HEAD
 # tools/**
 # !tools/packages.config
 
@@ -286,3 +311,6 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+=======
+# tools/
+>>>>>>> Initial commit
