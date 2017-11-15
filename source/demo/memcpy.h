@@ -17,8 +17,8 @@ void run_memory_benchmark(std::ofstream& stream)
     // TODO: Set random data each run.
     std::vector<uint8_t> dst(256 * 1024 * 1024);
     std::vector<uint8_t> src(256 * 1024 * 1024);
-    std::vector<int> sample_sizes = {KB, 32 * KB, 64 * KB, 128 * KB, 256 * KB, 512 * KB,
-                                     MB, 32 * MB, 64 * MB, 128 * MB, 256 * MB};
+    std::vector<int> sample_sizes = {KB, 8 * KB, 16 * KB, 32 * KB, 64 * KB, 128 * KB, 256 * KB, 512 * KB,
+                                     MB, 8 * MB, 16 * MB, 32 * MB, 64 * MB, 128 * MB, 256 * MB};
     auto randomise = [&](int sample) {
         std::random_device rd;
         std::mt19937 gen(rd());
@@ -29,6 +29,7 @@ void run_memory_benchmark(std::ofstream& stream)
         }
     };
 
+    stream << "Bytes" << exporter::separator << "Type" << exporter::separator << "Time (ms)" << std::endl;
     std::for_each(std::begin(sample_sizes), std::end(sample_sizes), [&](auto&& sample) {
         randomise(sample);
         auto normal = bench::run<double, std::milli>([&] { std::memcpy(dst.data(), src.data(), sample); });

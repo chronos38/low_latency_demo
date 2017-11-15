@@ -74,35 +74,33 @@ void* memcpy_vector(void* destination, const void* source, size_t num)
     return destination;
 }
 
-template <class T>
-constexpr T clip(T value, T min, T max)
-{
-    return std::min(std::max(value, min), max);
-}
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+#define CLIP(x, min, max) (MIN(MAX((x), (min)), (max)))
 
-std::unique_ptr<float[]> yuv_to_rgba(const float* yuv, int size)
+float* yuv_to_rgba(const float* yuv, int size)
 {
     const int rgba_size = size / 3 * 4;
-    auto rgba = std::make_unique<float[]>(rgba_size);
+    auto rgba = new float[rgba_size];
 
     for (int i = 0, j = 0; i < size && j < rgba_size; i += 3, j += 4) {
         const auto y = yuv[i];
         const auto u = yuv[i + 1];
         const auto v = yuv[i + 2];
-        rgba[j] = clip(y + 1.140f * v, .0f, 1.f);
-        rgba[j + 1] = clip(y - 0.395f * u - 0.581f * v, .0f, 1.f);
-        rgba[j + 2] = clip(y + 2.032f * u, .0f, 1.f);
+        rgba[j] = CLIP(y + 1.140f * v, .0f, 1.f);
+        rgba[j + 1] = CLIP(y - 0.395f * u - 0.581f * v, .0f, 1.f);
+        rgba[j + 2] = CLIP(y + 2.032f * u, .0f, 1.f);
         rgba[j + 3] = 1.f;
     }
 
     return rgba;
 }
 
-std::unique_ptr<float[]> yuv_to_rgba_parallel(const float* yuv, int size)
+float* yuv_to_rgba_parallel(const float* yuv, int size)
 {
     const int pixel_size = size / 3;
     const int rgba_size = size / 3 * 4;
-    auto rgba = std::make_unique<float[]>(rgba_size);
+    auto rgba = new float[rgba_size];
 
 #pragma omp parallel for
     for (int p = 0; p < pixel_size; ++p) {
@@ -111,21 +109,21 @@ std::unique_ptr<float[]> yuv_to_rgba_parallel(const float* yuv, int size)
         const auto y = yuv[i];
         const auto u = yuv[i + 1];
         const auto v = yuv[i + 2];
-        rgba[j] = clip(y + 1.140f * v, .0f, 1.f);
-        rgba[j + 1] = clip(y - 0.395f * u - 0.581f * v, .0f, 1.f);
-        rgba[j + 2] = clip(y + 2.032f * u, .0f, 1.f);
+        rgba[j] = CLIP(y + 1.140f * v, .0f, 1.f);
+        rgba[j + 1] = CLIP(y - 0.395f * u - 0.581f * v, .0f, 1.f);
+        rgba[j + 2] = CLIP(y + 2.032f * u, .0f, 1.f);
         rgba[j + 3] = 1.f;
     }
 
     return rgba;
 }
 
-std::unique_ptr<float[]> yuv_to_rgba_vector(const float* yuv, int size)
+float* yuv_to_rgba_vector(const float* yuv, int size)
 {
     static_assert(boost::simd::pack<float>::static_size == 4, "boost pack is not of size 4");
     const int pixel_size = size / 3;
     const int rgba_size = size / 3 * 4;
-    auto rgba = std::make_unique<float[]>(rgba_size);
+    auto rgba = new float[rgba_size];
     std::array<float, 4> r_store;
     std::array<float, 4> g_store;
     std::array<float, 4> b_store;
@@ -142,9 +140,9 @@ std::unique_ptr<float[]> yuv_to_rgba_vector(const float* yuv, int size)
         boost::simd::store(b, b_store.data());
 
         for (int n = 0; n < 4; ++n) {
-            rgba[j + n * 4] = clip(r_store[n], .0f, 1.f);
-            rgba[j + n * 4 + 1] = clip(g_store[n], .0f, 1.f);
-            rgba[j + n * 4 + 2] = clip(b_store[n], .0f, 1.f);
+            rgba[j + n * 4] = CLIP(r_store[n], .0f, 1.f);
+            rgba[j + n * 4 + 1] = CLIP(g_store[n], .0f, 1.f);
+            rgba[j + n * 4 + 2] = CLIP(b_store[n], .0f, 1.f);
             rgba[j + n * 4 + 3] = 1.f;
         }
     }
@@ -152,12 +150,12 @@ std::unique_ptr<float[]> yuv_to_rgba_vector(const float* yuv, int size)
     return rgba;
 }
 
-std::unique_ptr<float[]> yuv_to_rgba_parallel_vector(const float* yuv, int size)
+float* yuv_to_rgba_parallel_vector(const float* yuv, int size)
 {
     static_assert(boost::simd::pack<float>::static_size == 4, "boost pack is not of size 4");
     const int pixel_size = size / 3;
     const int rgba_size = size / 3 * 4;
-    auto rgba = std::make_unique<float[]>(rgba_size);
+    auto rgba = new float[rgba_size];
     std::array<float, 4> r_store;
     std::array<float, 4> g_store;
     std::array<float, 4> b_store;
@@ -177,9 +175,9 @@ std::unique_ptr<float[]> yuv_to_rgba_parallel_vector(const float* yuv, int size)
         boost::simd::store(b, b_store.data());
 
         for (int n = 0; n < 4; ++n) {
-            rgba[j + n * 4] = clip(r_store[n], .0f, 1.f);
-            rgba[j + n * 4 + 1] = clip(g_store[n], .0f, 1.f);
-            rgba[j + n * 4 + 2] = clip(b_store[n], .0f, 1.f);
+            rgba[j + n * 4] = CLIP(r_store[n], .0f, 1.f);
+            rgba[j + n * 4 + 1] = CLIP(g_store[n], .0f, 1.f);
+            rgba[j + n * 4 + 2] = CLIP(b_store[n], .0f, 1.f);
             rgba[j + n * 4 + 3] = 1.f;
         }
     }

@@ -21,21 +21,20 @@ public:
     {
         std::ostringstream stream;
         for (size_t i = 0; i < ids.size(); ++i) {
-            stream << size << separator << ids[i] << separator << line(results[i]) << std::endl;
+            stream << size << separator << ids[i] << separator << to_time(results[i]) << std::endl;
         }
-        stream << std::endl;
         return stream.str();
     }
 
 private:
     template <class Rep, class Period>
-    static std::string line(const std::chrono::duration<Rep, Period>& duration)
+    static std::string to_time(const std::chrono::duration<Rep, Period>& duration)
     {
         const std::unordered_map<intmax_t, std::string> mapping = {
             std::make_pair(1, "s"), std::make_pair(std::milli::den, "ms"), std::make_pair(std::micro::den, "us"),
             std::make_pair(std::nano::den, "ns")};
         std::ostringstream stream;
-        stream << duration.count() << ' ' << mapping.at(Period::den);
+        stream << duration.count();
         return stream.str();
     }
 };
