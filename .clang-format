@@ -8,8 +8,8 @@ AllowShortCaseLabelsOnASingleLine: false
 AllowShortIfStatementsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: None
 AllowShortLoopsOnASingleLine: false
-BreakBeforeBraces: Stroustrup
-ColumnLimit: 160
+BreakBeforeBraces: Linux
+ColumnLimit: 120
 Cpp11BracedListStyle: true
 SortIncludes: false
 AccessModifierOffset: -4
