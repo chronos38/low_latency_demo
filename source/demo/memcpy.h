@@ -8,17 +8,17 @@
 #include <fstream>
 #include <algorithm>
 #include <random>
+#include <memory>
 
 void* memcpy_parallel(void* destination, const void* source, size_t num);
 void* memcpy_vector(void* destination, const void* source, size_t num);
 
 void run_memory_benchmark(std::ofstream& stream)
 {
-    // TODO: Set random data each run.
-    std::vector<uint8_t> dst(256 * 1024 * 1024);
-    std::vector<uint8_t> src(256 * 1024 * 1024);
-    std::vector<int> sample_sizes = {KB, 8 * KB, 16 * KB, 32 * KB, 64 * KB, 128 * KB, 256 * KB, 512 * KB,
-                                     MB, 8 * MB, 16 * MB, 32 * MB, 64 * MB, 128 * MB, 256 * MB};
+    auto src = std::make_unique<uint8_t[]>(1024 * 1024 * 1024);
+    auto dst = std::make_unique<uint8_t[]>(1024 * 1024 * 1024);
+    std::vector<int> sample_sizes = {KB,     8 * KB,  16 * KB, 32 * KB, 64 * KB,  128 * KB, 256 * KB, 512 * KB, MB,
+                                     8 * MB, 16 * MB, 32 * MB, 64 * MB, 128 * MB, 256 * MB, 512 * MB, GB};
     auto randomise = [&](int sample) {
         std::random_device rd;
         std::mt19937 gen(rd());
@@ -31,13 +31,13 @@ void run_memory_benchmark(std::ofstream& stream)
 
     stream << "Bytes" << exporter::separator << "Type" << exporter::separator << "Time (ms)" << std::endl;
     std::for_each(std::begin(sample_sizes), std::end(sample_sizes), [&](auto&& sample) {
-        randomise(sample);
-        auto normal = bench::run<double, std::milli>([&] { std::memcpy(dst.data(), src.data(), sample); });
-        randomise(sample);
-        auto vector = bench::run<double, std::milli>([&] { memcpy_vector(dst.data(), src.data(), sample); });
-        randomise(sample);
-        auto parallel = bench::run<double, std::milli>([&] { memcpy_parallel(dst.data(), src.data(), sample); });
-        stream << exporter::execute<double, std::milli>(sample, {"normal", "vector", "parallel"},
-                                                        {normal, vector, parallel});
+        auto normal =
+            benchmark_runner([&] { randomise(sample); }, [&] { std::memcpy(dst.get(), src.get(), sample); }, [] {});
+        auto vector =
+            benchmark_runner([&] { randomise(sample); }, [&] { memcpy_vector(dst.get(), src.get(), sample); }, [] {});
+        auto parallel =
+            benchmark_runner([&] { randomise(sample); }, [&] { memcpy_parallel(dst.get(), src.get(), sample); }, [] {});
+        stream << exporter::execute<benchmark_rep, benchmark_period>(sample, {"normal", "vector", "parallel"},
+                                                                     {normal, vector, parallel});
     });
 }

@@ -48,11 +48,10 @@ void* memcpy_vector(void* destination, const void* source, size_t num)
 {
     const char* src = (const char*)source;
     char* dst = (char*)destination;
-    size_t i;
 
     if (!((uintptr_t)src & 15) && !((uintptr_t)dst & 15)) {
         __m128 values[4];
-        for (i = num / 64; i--;) {
+        for (size_t i = num / 64; i--;) {
             _mm_prefetch(src, _MM_HINT_NTA);
             values[0] = *(__m128*)(src + 0);
             values[1] = *(__m128*)(src + 16);
@@ -118,6 +117,16 @@ float* yuv_to_rgba_parallel(const float* yuv, int size)
     return rgba;
 }
 
+constexpr void yuv_to_rgba_vector_result(int j, float* rgba, float* r_store, float* g_store, float* b_store)
+{
+    for (int n = 0; n < 4; ++n) {
+        rgba[j + n * 4] = CLIP(r_store[n], .0f, 1.f);
+        rgba[j + n * 4 + 1] = CLIP(g_store[n], .0f, 1.f);
+        rgba[j + n * 4 + 2] = CLIP(b_store[n], .0f, 1.f);
+        rgba[j + n * 4 + 3] = 1.f;
+    }
+}
+
 float* yuv_to_rgba_vector(const float* yuv, int size)
 {
     static_assert(boost::simd::pack<float>::static_size == 4, "boost pack is not of size 4");
@@ -138,48 +147,7 @@ float* yuv_to_rgba_vector(const float* yuv, int size)
         boost::simd::store(r, r_store.data());
         boost::simd::store(g, g_store.data());
         boost::simd::store(b, b_store.data());
-
-        for (int n = 0; n < 4; ++n) {
-            rgba[j + n * 4] = CLIP(r_store[n], .0f, 1.f);
-            rgba[j + n * 4 + 1] = CLIP(g_store[n], .0f, 1.f);
-            rgba[j + n * 4 + 2] = CLIP(b_store[n], .0f, 1.f);
-            rgba[j + n * 4 + 3] = 1.f;
-        }
-    }
-
-    return rgba;
-}
-
-float* yuv_to_rgba_parallel_vector(const float* yuv, int size)
-{
-    static_assert(boost::simd::pack<float>::static_size == 4, "boost pack is not of size 4");
-    const int pixel_size = size / 3;
-    const int rgba_size = size / 3 * 4;
-    auto rgba = new float[rgba_size];
-    std::array<float, 4> r_store;
-    std::array<float, 4> g_store;
-    std::array<float, 4> b_store;
-
-#pragma omp parallel for
-    for (int p = 0; p < pixel_size; ++p) {
-        const auto i = p * 3;
-        const auto j = p * 4;
-        boost::simd::pack<float, 4> y{yuv[i], yuv[i + 3], yuv[i + 6], yuv[i + 9]};
-        boost::simd::pack<float, 4> u{yuv[i + 1], yuv[i + 4], yuv[i + 7], yuv[i + 10]};
-        boost::simd::pack<float, 4> v{yuv[i + 2], yuv[i + 5], yuv[i + 8], yuv[i + 11]};
-        auto r = y + 1.140f * v;
-        auto g = y - 0.395f * u - 0.581f * v;
-        auto b = y + 2.032f * u;
-        boost::simd::store(r, r_store.data());
-        boost::simd::store(g, g_store.data());
-        boost::simd::store(b, b_store.data());
-
-        for (int n = 0; n < 4; ++n) {
-            rgba[j + n * 4] = CLIP(r_store[n], .0f, 1.f);
-            rgba[j + n * 4 + 1] = CLIP(g_store[n], .0f, 1.f);
-            rgba[j + n * 4 + 2] = CLIP(b_store[n], .0f, 1.f);
-            rgba[j + n * 4 + 3] = 1.f;
-        }
+        yuv_to_rgba_vector_result(j, rgba, r_store.data(), g_store.data(), b_store.data());
     }
 
     return rgba;
